@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Django Recommended
 *.egg-info
 *.pot
@@ -17,6 +18,8 @@ tests/report/
 credentials.py
 credentials.pyc
 
+=======
+>>>>>>> 7bd7fd210d43541ac56ef46db94a452e036bbdf7
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -26,9 +29,13 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+<<<<<<< HEAD
 django-env/
 .Python
 env/
+=======
+.Python
+>>>>>>> 7bd7fd210d43541ac56ef46db94a452e036bbdf7
 build/
 develop-eggs/
 dist/
@@ -40,10 +47,18 @@ lib64/
 parts/
 sdist/
 var/
+<<<<<<< HEAD
 *.egg-info/
 .installed.cfg
 *.egg
 assets/ # The directory set as STATIC_ROOT where Apache creates new static files on live web servers.
+=======
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+>>>>>>> 7bd7fd210d43541ac56ef46db94a452e036bbdf7
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -63,15 +78,35 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+<<<<<<< HEAD
 *,cover
 .hypothesis/
+=======
+*.cover
+.hypothesis/
+.pytest_cache/
+>>>>>>> 7bd7fd210d43541ac56ef46db94a452e036bbdf7
 
 # Translations
 *.mo
 *.pot
 
+<<<<<<< HEAD
 # Django 
 *.log
+=======
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+>>>>>>> 7bd7fd210d43541ac56ef46db94a452e036bbdf7
 
 # Sphinx documentation
 docs/_build/
@@ -79,9 +114,45 @@ docs/_build/
 # PyBuilder
 target/
 
+<<<<<<< HEAD
 #Ipython Notebook
 .ipynb_checkpoints
 
 # webmap PDF report
 static/*.pdf
 
+=======
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+>>>>>>> 7bd7fd210d43541ac56ef46db94a452e036bbdf7
