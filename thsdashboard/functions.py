@@ -5,7 +5,7 @@ import hashlib
 import re
 
 
-# redundant, remove later
+# why do we need a token check if it is strictly only accessible from localhost?
 def token_check(token):
 	tokenhash = open('/root/token.sha256').read().strip()
 	if tokenhash == hashlib.sha256(token.encode('utf-8')).hexdigest():
@@ -51,23 +51,20 @@ def fromOSTypeToFontAwesome(ostype):
 		return 'fas fa-question'
 
 
-# function to parse XML file
-def parse_xml(xmlfile):
+def xml_parse(xmlfile):
 	try:
 		# get XML data
-		xml_data = xmltodict.parse(open('xml/' + scanfile, 'r').read())
+		xml_data = xmltodict.parse(open('xml/'+ xmlfile, 'r').read())
 	except:
 		# no XML file? return no data
 		return {'ports_open': 0, 'ports_closed': 0, 'ports_filtered': 0}
-
 	# convert XML to raw JSON
-	raw_json = json.dumps(xml_data['nmaprun'], indent=4)
-	# convert raw JSON to Python list
+	raw_json = json.dumps(xml_data['nmaprun'], indent = 4)
 	return json.loads(raw_json)
 
 
-def nmap_ports_stats(scanfile):
-	parsed_json = parse_xml(scanfile)
+def nmap_ports_stats(xmlfile):
+	parsed_json = xml_parse(xmlfile)
 	debug = {}  # for showing debug output in the dashboard
 
 	# got XML file, but no systems? return no data
@@ -123,7 +120,6 @@ def nmap_ports_stats(scanfile):
 					ports_filtered = (ports_filtered + 1)
 					debug[address]['portcount']['ports_filtered'][total_ports] = ports_filtered
 				total_ports = (total_ports + 1)
-				# print(total_ports)
 
 	return {'ports_open':ports_open,'ports_closed':ports_closed,'ports_filtered':ports_filtered, 'debug':json.dumps(debug)}
 
@@ -145,14 +141,14 @@ def get_cve(scanmd5):
 	return cvehost
 
 
-def get_ports_details(scanfile):
+def get_ports_details(xmlfile):
 	faddress = ""
-	oo = xmltodict.parse(open('xml/'+scanfile, 'r').read())
+	oo = xmltodict.parse(open('xml/'+xmlfile, 'r').read())
 	out2 = json.dumps(xml_data['nmaprun'], indent=4)
 	o = json.loads(out2)
 
-	r = {'file':scanfile, 'hosts': {}}
-	scanmd5 = hashlib.md5(str(scanfile).encode('utf-8')).hexdigest()
+	r = {'file':xmlfile, 'hosts': {}}
+	scanmd5 = hashlib.md5(str(xmlfile).encode('utf-8')).hexdigest()
 
 	# collect all labels in labelhost dict
 	labelhost = {}
@@ -187,9 +183,7 @@ def get_ports_details(scanfile):
 
 		hostname = {}
 		if 'hostnames' in individual_host and type(individual_host['hostnames']) is dict:
-			# hostname = json.dumps(individual_host['hostnames'])
 			if 'hostname' in individual_host['hostnames']:
-				# hostname += '<br>'
 				if type(individual_host['hostnames']['hostname']) is list:
 					for hi in individual_host['hostnames']['hostname']:
 						hostname[hi['@type']] = hi['@name']
@@ -197,6 +191,7 @@ def get_ports_details(scanfile):
 					hostname[individual_host['hostnames']['hostname']['@type']] = individual_host['hostnames']['hostname']['@name'];
 
 		if individual_host['status']['@state'] == 'up':
+			print("if host is up")
 			ports_open,ports_closed,ports_filtered = 0,0,0
 			ss,pp,ost = {},{},{}
 			lastportid = 0
@@ -212,7 +207,6 @@ def get_ports_details(scanfile):
 				continue
 
 			addressmd5 = hashlib.md5(str(address).encode('utf-8')).hexdigest()
-			#cpe[address] = {}
 
 			labelout = ''
 			if scanmd5 in labelhost:
@@ -223,21 +217,13 @@ def get_ports_details(scanfile):
 			if scanmd5 in noteshost:
 				if addressmd5 in noteshost[scanmd5]:
 					notesb64 = noteshost[scanmd5][addressmd5]
-			#		notesout = '<br><a id="noteshost'+str(hostindex)+'" href="#!" onclick="javascript:openNotes(\''+hashlib.md5(str(address).encode('utf-8')).hexdigest()+'\', \''+notesb64+'\');" class="small"><i class="fas fa-comment"></i> contains notes</a>'
-			#		removenotes = '<li><a href="#!" onclick="javascript:removeNotes(\''+addressmd5+'\', \''+str(hostindex)+'\');">Remove notes</a></li>'
 
 			cveout = ''
-			#cvecount = 0
 			if scanmd5 in cvehost:
 				if addressmd5 in cvehost[scanmd5]:
 					cveout = json.loads(cvehost[scanmd5][addressmd5])
-			#		for cveobj in cvejson:	
-			#			cvecount = (cvecount + 1)
 
 
-			#if faddress == "":
-			#	r['hosts'][address] = {'hostname':hostname, 'label':labelout, 'notes':notesb64}
-			#else:
 			r['hosts'][address] = {'ports':[], 'hostname':hostname, 'label':labelout, 'notes':notesb64, 'CVE':cveout}
 
 			if 'ports' in individual_host and 'port' in individual_host['ports']:

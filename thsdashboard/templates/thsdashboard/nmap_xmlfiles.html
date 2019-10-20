@@ -6,7 +6,8 @@
 			<div class="col s12 m3">
 				<div class="card darken-1">
 					<div class="card-content grey darken-3 white-text">
-						<span class="card-title"><i class="fas fa-file-code"></i> {{ stats.xmlcount }}</span>
+{#						<span>{{ stats.portstat }}</span>#}
+						<span class="card-title"><b class="fas fa-file-code"> {{ stats.xmlcount }} </b></span>
 						<p>XML Files</p>
 					</div>
 				</div>
@@ -14,7 +15,7 @@
 			<div class="col s12 m3">
 				<div class="card darken-1">
 					<div class="card-content green darken-1 white-text">
-						<span class="card-title"><i class="fas fa-door-open"></i> {{ stats.po }}</span>
+						<span class="card-title"><b class="fas fa-door-open"> {{ stats.ports_open }} </b></span>
 						<p>Open ports</p>
 					</div>
 				</div>
@@ -22,7 +23,7 @@
 			<div class="col s12 m3">
 				<div class="card darken-1">
 					<div class="card-content red darken-1 white-text">
-						<span class="card-title"><i class="fas fa-door-closed"></i> {{ stats.pc }}</span>
+						<span class="card-title"><b class="fas fa-door-closed"> {{ stats.ports_closed }} </b></span>
 						<p>Closed ports</p>
 					</div>
 				</div>
@@ -30,7 +31,7 @@
 			<div class="col s12 m3">
 				<div class="card darken-1">
 					<div class="card-content grey darken-1 white-text">
-						<span class="card-title"><i class="fas fa-filter"></i> {{ stats.pf }}</span>
+						<span class="card-title"><b class="fas fa-filter"> {{ stats.ports_filtered }} </b></span>
 						<p>Filtered ports</p>
 					</div>
 				</div>
@@ -53,9 +54,12 @@
 						<td class="hide-on-small-only"><code>{{ v.startstr }}</code></td>
 						<td class="hide-on-small-only">{{ v.hostnum }}</td>
 						<td>
-							<i class="fas fa-door-open green-text"></i><span class="green-text">{{ v.portstats.po }}</span> 
-							<i class="fas fa-door-closed red-text"></i><span class="red-text">{{ v.portstats.pc }}</span>
-							<i class="fas fa-filter grey-text"></i><span class="grey-text">{{ v.portstats.pf }}</span>
+							<i class="fas fa-door-open green-text"></i><span class="green-text">
+							{{ v.portstats.ports_open }}</span>
+							<i class="fas fa-door-closed red-text"></i><span class="red-text">
+							{{ v.portstats.ports_closed }}</span>
+							<i class="fas fa-filter grey-text"></i><span class="grey-text">
+							{{ v.portstats.ports_filtered }}</span>
 						</td>
 					</tr>
 				{% endfor %}

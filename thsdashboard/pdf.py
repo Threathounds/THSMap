@@ -1,9 +1,12 @@
-from django.shortcuts import render
+import base64
+import html
+import urllib.parse
+
 from django.http import HttpResponse
-import xmltodict, json, html, os, hashlib, re, urllib.parse, base64
-from collections import OrderedDict
+from django.shortcuts import render
+
 from thsdashboard.functions import *
-#from view import labelToColor
+
 
 def reportPDFView(request):
 	r = { 'out':'' }
@@ -16,8 +19,8 @@ def reportPDFView(request):
 	filterscriptid = {
 	}
 
-	if 'scanfile' in request.session:
-		oo = xmltodict.parse(open('xml/'+request.session['scanfile'], 'r').read())
+	if 'xmlfile' in request.session:
+		oo = xmltodict.parse(open('xml/'+request.session['xmlfile'], 'r').read())
 		r['out2'] = json.dumps(oo['nmaprun'], indent=4)
 		o = json.loads(r['out2'])
 	else:
@@ -25,9 +28,9 @@ def reportPDFView(request):
 
 	r['html'] = ''
 	hostdetails = ''
-	counters = {'po':0,'pc':0,'pf':0,'hostsup':0,'ostype':{},'pi':{},'ss':{}}
+	counters = {'po':0,'ports_closed ':0,'pf':0,'hostsup':0,'ostype':{},'pi':{},'ss':{}}
 
-	scanmd5 = hashlib.md5(str(request.session['scanfile']).encode('utf-8')).hexdigest()
+	scanmd5 = hashlib.md5(str(request.session['xmlfile']).encode('utf-8')).hexdigest()
 
 	# collect all cve in cvehost dict
 	cvehost = get_cve(scanmd5)
@@ -41,7 +44,7 @@ def reportPDFView(request):
 		else:
 			i = o['host']
 
-		hostcounters = {'po':0,'pc':0,'pf':0,'ostype':{},'pi':{},'ss':{}}
+		hostcounters = {'po':0,'ports_closed ':0,'pf':0,'ostype':{},'pi':{},'ss':{}}
 		hostdetails_html = ''
 		portsfound = False
 		striggered = False
@@ -116,8 +119,8 @@ def reportPDFView(request):
 				hdhtml_stateico = ''
 				if p['state']['@state'] == 'closed':
 					hdhtml_stateico = '<i class="fas fa-door-closed red-text"></i>'
-					counters['pc'] = (counters['pc'] + 1)
-					hostcounters['pc'] = (hostcounters['pc'] + 1)
+					counters['ports_closed '] = (counters['ports_closed '] + 1)
+					hostcounters['ports_closed '] = (hostcounters['ports_closed '] + 1)
 				elif p['state']['@state'] == 'open':
 					hdhtml_stateico = '<i class="fas fa-door-open green-text"></i>'
 					counters['po'] = (counters['po'] + 1)
@@ -244,9 +247,9 @@ def reportPDFView(request):
 
 		if i['status']['@state'] == 'up':
 			hostdetails_html += '<div class="row margintb">'+\
-			'		<div class="col s3"><center><h3><i class="fab fa-creative-commons-sampling"></i> '+str(hostcounters['po']+hostcounters['pc']+hostcounters['pf'])+'</h3>TOTAL PORT</center></div>'+\
+			'		<div class="col s3"><center><h3><i class="fab fa-creative-commons-sampling"></i> '+str(hostcounters['po']+hostcounters['ports_closed ']+hostcounters['pf'])+'</h3>TOTAL PORT</center></div>'+\
 			'		<div class="col s3 bleft""><center><h3><i class="fas fa-door-open green-text"></i> '+str(hostcounters['po'])+'</h3>OPEN PORT</center></div>'+\
-			'		<div class="col s3 bleft"><center><h3><i class="fas fa-door-closed red-text"></i> '+str(hostcounters['pc'])+'</h3>CLOSED PORT</center></div>'+\
+			'		<div class="col s3 bleft"><center><h3><i class="fas fa-door-closed red-text"></i> '+str(hostcounters['ports_closed '])+'</h3>CLOSED PORT</center></div>'+\
 			'		<div class="col s3 bleft"><center><h3><i class="fas fa-filter grey-text"></i> '+str(hostcounters['pf'])+'</h3>FILTERED PORT</center></div>'+\
 			'	</div>'+\
 			'	<table><thead><tr><th>Protocol / Port</th><th>Port State</th><th>Product / Version</th></tr></thead><tbody>'+\
@@ -279,9 +282,9 @@ def reportPDFView(request):
 		html_services += '<b>'+str(ii)+'</b> <span class="grey-text">('+str(counters['ss'][ii])+')</span>, '
 		javascript_services += '["'+str(ii)+'", '+str(counters['ss'][ii])+'],'
 
-	scantitle = request.session['scanfile'].replace('.xml','').replace('_',' ')
-	if re.search('^webmapsched\_[0-9\.]+', request.session['scanfile']):
-		m = re.search('^webmapsched\_[0-9\.]+\_(.+)', request.session['scanfile'])
+	scantitle = request.session['xmlfile'].replace('.xml','').replace('_',' ')
+	if re.search('^webmapsched\_[0-9\.]+', request.session['xmlfile']):
+		m = re.search('^webmapsched\_[0-9\.]+\_(.+)', request.session['xmlfile'])
 		scantitle = m.group(1).replace('.xml','').replace('_',' ')
 
 	scantype = ''
@@ -326,7 +329,7 @@ def reportPDFView(request):
 	'	<h2>Ports and Services</h2><div class="subtitle">Ports status and services type</div>'+\
 	'	<div class="row" style="margin-top:30px;border-bottom:solid #ccc 1px;padding:10px;">'+\
 	'		<div class="col s3"><b class="blue-text" style="font-size:24px;">HOSTS UP</b><br><span style="color:#999;font-size:32px;">'+str(counters['hostsup'])+'</span></div>'+\
-	'		<div class="col s3" style="border-left:solid #ccc 1px;"><b class="blue-text" style="font-size:24px;">PORTS</b><br><span style="color:#999;font-size:32px;">'+str(counters['pc']+counters['po']+counters['pf'])+'</span></div>'+\
+	'		<div class="col s3" style="border-left:solid #ccc 1px;"><b class="blue-text" style="font-size:24px;">PORTS</b><br><span style="color:#999;font-size:32px;">'+str(counters['ports_closed ']+counters['po']+counters['pf'])+'</span></div>'+\
 	'		<div class="col s3" style="border-left:solid #ccc 1px;"><b class="blue-text" style="font-size:24px;">SERVICES</b><br><span style="color:#999;font-size:32px;">'+str(len(counters['ss'].keys()))+'</span></div>'+\
 	'		<div class="col s3" style="border-left:solid #ccc 1px;"><b class="blue-text" style="font-size:24px;">OS</b><br><span style="color:#999;font-size:32px;">'+str(len(counters['ostype'].keys()))+'</span></div>'+\
 	'	</div>'+\
@@ -337,9 +340,9 @@ def reportPDFView(request):
 	'			<div style="width:400px;height:300px;" id="chart_services"></div>'+\
 	'		</div>'+\
 	'		<div class="col s4" style="border-left:solid #ccc 1px;padding-left:20px;min-height:300px;">'+\
-	'			<b class="subtitle">Total Ports</b><br><span class="subtitle">'+str(counters['pc']+counters['po']+counters['pf'])+'</span><br><br>'+\
+	'			<b class="subtitle">Total Ports</b><br><span class="subtitle">'+str(counters['ports_closed ']+counters['po']+counters['pf'])+'</span><br><br>'+\
 	'			<b class="subtitle green-text">Open Ports</b><br><span class="subtitle green-text">'+str(counters['po'])+'</span><br><br>'+\
-	'			<b class="subtitle red-text">Closed Ports</b><br><span class="subtitle red-text">'+str(counters['pc'])+'</span><br><br>'+\
+	'			<b class="subtitle red-text">Closed Ports</b><br><span class="subtitle red-text">'+str(counters['ports_closed '])+'</span><br><br>'+\
 	'			<b class="subtitle orange-text">Filtered Ports</b><br><span class="subtitle orange-text">'+str(counters['pf'])+'</span><br><br>'+\
 	'			<b>Ports</b>:<br><span style="font-family:monospace;font-size:11px;">'+html_ports[0:-2]+'</span><br><br>'+\
 	'			<b>Services</b>:<br><span style="font-family:monospace;font-size:11px;">'+html_services[0:-2]+'</span>'+\
@@ -356,7 +359,7 @@ def reportPDFView(request):
 	'	data.addColumn("number", "Count");'+\
 	'	data.addRows(['+\
 	'		["Open", '+str(counters['po'])+'],'+\
-	'		["Closed", '+str(counters['pc'])+'],'+\
+	'		["Closed", '+str(counters['ports_closed '])+'],'+\
 	'		["Filtered", '+str(counters['pf'])+'],'+\
 	'	]);'+\
 	'	var options = {'+\

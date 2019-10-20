@@ -1,8 +1,7 @@
 from django.shortcuts import render
-from django.http import HttpResponse
-import xmltodict, json, html, os, hashlib, re, urllib.parse, base64
-from collections import OrderedDict
+
 from thsdashboard.functions import *
+
 
 def visjs(request):
 	r = {}
@@ -13,7 +12,7 @@ def visjs(request):
 		r['auth'] = True
 
 
-	if 'scanfile' not in request.session:
+	if 'xmlfile' not in request.session:
 		r['js'] = '''
 			<script>
 			$(document).ready(function() {
@@ -31,13 +30,13 @@ def visjs(request):
 		'''
 		return render(request, 'thsdashboard/nmap_network.html', r)
 
-	oo = xmltodict.parse(open('xml/'+request.session['scanfile'], 'r').read())
+	oo = xmltodict.parse(open('xml/'+request.session['xmlfile'], 'r').read())
 	r['out2'] = json.dumps(oo['nmaprun'], indent=4)
 	o = json.loads(r['out2'])
 
-	scanmd5 = hashlib.md5(str(request.session['scanfile']).encode('utf-8')).hexdigest()
+	scanmd5 = hashlib.md5(str(request.session['xmlfile']).encode('utf-8')).hexdigest()
 
-	r['scanfile'] = request.session['scanfile']
+	r['xmlfile'] = request.session['xmlfile']
 	r['scanmd5'] = scanmd5
 
 	addnodes = ''
@@ -62,7 +61,7 @@ def visjs(request):
 
 		if i['status']['@state'] == 'up':
 
-			po,pc,pf = 0,0,0
+			po,ports_closed ,ports_filtered = 0,0,0
 			#ss,pp,ost = {},{},{}
 			lastportid = 0
 
@@ -136,7 +135,7 @@ def visjs(request):
 	r['js'] = '<script> $(document).ready(function() { '+\
 	''+\
 	'	var portnodes = '+json.dumps(portnodes)+';'+\
-	"	addNode('scan"+scanmd5+"', '"+request.session['scanfile']+"', '\uf15b', '#ccc', '#ccc');"+\
+	"	addNode('scan"+scanmd5+"', '"+request.session['xmlfile']+"', '\uf15b', '#ccc', '#ccc');"+\
 	addnodes+\
 	''+\
 	'	function showPortNodes(addrmd5) { '+\
