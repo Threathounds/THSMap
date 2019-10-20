@@ -81,7 +81,7 @@ WSGI_APPLICATION = 'THSMap.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': '/root/TOOLZ/THSMap/db.sqlite3',
+        'NAME': './db.sqlite3',
     }
 }
 

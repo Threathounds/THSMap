@@ -10,7 +10,7 @@ def rmNotes(request, hashstr):
 
 	scanfilemd5 = hashlib.md5(str(request.session['scanfile']).encode('utf-8')).hexdigest()
 	if re.match('^[a-f0-9]{32,32}$', hashstr) is not None:
-		os.remove('/root/TOOLZ/THSMap/notes/'+scanfilemd5+'_'+hashstr+'.notes')
+		os.remove('notes/'+scanfilemd5+'_'+hashstr+'.notes')
 		res = {'ok':'notes removed'}
 	else:
 		res = {'error':'invalid format'}
@@ -25,7 +25,7 @@ def saveNotes(request):
 		scanfilemd5 = hashlib.md5(str(request.session['scanfile']).encode('utf-8')).hexdigest()
 
 		if re.match('^[a-f0-9]{32,32}$', request.POST['hashstr']) is not None:
-			f = open('/root/TOOLZ/THSMap/notes/'+scanfilemd5+'_'+request.POST['hashstr']+'.notes', 'w')
+			f = open('notes/'+scanfilemd5+'_'+request.POST['hashstr']+'.notes', 'w')
 			f.write(request.POST['notes'])
 			f.close()
 			res = {'ok':'notes saved'}
@@ -46,7 +46,7 @@ def rmlabel(request, objtype, hashstr):
 	scanfilemd5 = hashlib.md5(str(request.session['scanfile']).encode('utf-8')).hexdigest()
 
 	if re.match('^[a-f0-9]{32,32}$', hashstr) is not None:
-		os.remove('/root/TOOLZ/THSMap/notes/'+scanfilemd5+'_'+hashstr+'.'+objtype+'.label')
+		os.remove('notes/'+scanfilemd5+'_'+hashstr+'.'+objtype+'.label')
 		res = {'ok':'label removed'}
 		return HttpResponse(json.dumps(res), content_type="application/json")
 
@@ -67,7 +67,7 @@ def label(request, objtype, label, hashstr):
 
 	if label in labels and objtype in types:
 		if re.match('^[a-f0-9]{32,32}$', hashstr) is not None:
-			f = open('/root/TOOLZ/THSMap/notes/'+scanfilemd5+'_'+hashstr+'.'+objtype+'.label', 'w')
+			f = open('notes/'+scanfilemd5+'_'+hashstr+'.'+objtype+'.label', 'w')
 			f.write(label)
 			f.close()
 			res = {'ok':'label set', 'label':str(label)}
@@ -79,7 +79,7 @@ def port_details(request, address, portid):
 	if 'auth' not in request.session:
 		return False
 
-	oo = xmltodict.parse(open('/root/TOOLZ/THSMap/xml/'+request.session['scanfile'], 'r').read())
+	oo = xmltodict.parse(open('xml/'+request.session['scanfile'], 'r').read())
 	r['out'] = json.dumps(oo['nmaprun'], indent=4)
 	o = json.loads(r['out'])
 
@@ -114,10 +114,10 @@ def genPDF(request):
 
 	if 'scanfile' in request.session:
 		pdffile = hashlib.md5(str(request.session['scanfile']).encode('utf-8')).hexdigest()
-		if os.path.exists('/root/TOOLZ/THSMap/thsdashboard/static/'+pdffile+'.pdf'):
-			os.remove('/root/TOOLZ/THSMap/thsdashboard/static/'+pdffile+'.pdf')
+		if os.path.exists('thsdashboard/static/'+pdffile+'.pdf'):
+			os.remove('thsdashboard/static/'+pdffile+'.pdf')
 
-		os.popen('/root/TOOLZ/THSMap/wkhtmltox/bin/wkhtmltopdf --cookie sessionid '+request.session._session_key+' --enable-javascript --javascript-delay 6000 http://127.0.0.1:8000/view/pdf/ /root/TOOLZ/THSMap/thsdashboard/static/'+pdffile+'.pdf')
+		os.popen('wkhtmltox/bin/wkhtmltopdf --cookie sessionid '+request.session._session_key+' --enable-javascript --javascript-delay 6000 http://127.0.0.1:8000/view/pdf/ thsdashboard/static/'+pdffile+'.pdf')
 		res = {'ok':'PDF created', 'file':'/static/'+pdffile+'.pdf'}
 		return HttpResponse(json.dumps(res), content_type="application/json")
 
@@ -129,7 +129,7 @@ def getCVE(request):
 
 	if request.method == "POST":
 		scanfilemd5 = hashlib.md5(str(request.session['scanfile']).encode('utf-8')).hexdigest()
-		cveproc = os.popen('python3 /root/TOOLZ/THSMap/thsdashboard/nmap/cve.py '+request.session['scanfile'])
+		cveproc = os.popen('python3 thsdashboard/nmap/cve.py '+request.session['scanfile'])
 		res['cveout'] = cveproc.read()
 		cveproc.close()
 
@@ -150,7 +150,7 @@ def getCVE(request):
 				hostmd5 = hashlib.md5(str(host).encode('utf-8')).hexdigest()
 				if type(cvejson) is list and len(cvejson) > 0:
 					res[host] = cvejson[0]
-					f = open('/root/TOOLZ/THSMap/notes/'+scanfilemd5+'_'+hostmd5+'.cve', 'w')
+					f = open('notes/'+scanfilemd5+'_'+hostmd5+'.cve', 'w')
 					f.write(json.dumps(cvejson))
 					f.close()
 
@@ -165,7 +165,7 @@ def getCVE(request):
 
 		if type(cvejson) is list and len(cvejson) > 0:
 			res[request.POST['host']][request.POST['port']] = cvejson[0]
-			f = open('/root/TOOLZ/THSMap/notes/'+scanfilemd5+'_'+hostmd5+'.cve', 'w')
+			f = open('notes/'+scanfilemd5+'_'+hostmd5+'.cve', 'w')
 			f.write(json.dumps(cvejson))
 			f.close()
 
@@ -175,7 +175,7 @@ def apiv1_hostdetails(request, scanfile, faddress=""):
 	if token_check(request.GET['token']) is not True:
 		return HttpResponse(json.dumps({'error':'invalid token'}, indent=4), content_type="application/json")
 
-	oo = xmltodict.parse(open('/root/TOOLZ/THSMap/xml/'+scanfile, 'r').read())
+	oo = xmltodict.parse(open('xml/'+scanfile, 'r').read())
 	out2 = json.dumps(oo['nmaprun'], indent=4)
 	o = json.loads(out2)
 
@@ -184,23 +184,23 @@ def apiv1_hostdetails(request, scanfile, faddress=""):
 
 	# collect all labels in labelhost dict
 	labelhost = {}
-	labelfiles = os.listdir('/root/TOOLZ/THSMap/notes')
+	labelfiles = os.listdir('notes')
 	for lf in labelfiles:
 		m = re.match('^('+scanmd5+')_([a-z0-9]{32,32})\.host\.label$', lf)
 		if m is not None:
 			if m.group(1) not in labelhost:
 				labelhost[m.group(1)] = {}
-			labelhost[m.group(1)][m.group(2)] = open('/root/TOOLZ/THSMap/notes/'+lf, 'r').read()
+			labelhost[m.group(1)][m.group(2)] = open('notes/'+lf, 'r').read()
 
 	# collect all notes in noteshost dict
 	noteshost = {}
-	notesfiles = os.listdir('/root/TOOLZ/THSMap/notes')
+	notesfiles = os.listdir('notes')
 	for nf in notesfiles:
 		m = re.match('^('+scanmd5+')_([a-z0-9]{32,32})\.notes$', nf)
 		if m is not None:
 			if m.group(1) not in noteshost:
 				noteshost[m.group(1)] = {}
-			noteshost[m.group(1)][m.group(2)] = open('/root/TOOLZ/THSMap/notes/'+nf, 'r').read()
+			noteshost[m.group(1)][m.group(2)] = open('notes/'+nf, 'r').read()
 
 	# collect all cve in cvehost dict
 	cvehost = get_cve(scanmd5)
@@ -318,10 +318,10 @@ def apiv1_scan(request):
 	if token_check(request.GET['token']) is not True:
 		return HttpResponse(json.dumps({'error':'invalid token'}, indent=4), content_type="application/json")
 
-	gitcmd = os.popen('cd /root/TOOLZ/THSMap/thsdashboard && git rev-parse --abbrev-ref HEAD')
+	gitcmd = os.popen('cd thsdashboard && git rev-parse --abbrev-ref HEAD')
 	r['webmap_version'] = gitcmd.read().strip()
 
-	xmlfiles = os.listdir('/root/TOOLZ/THSMap/xml')
+	xmlfiles = os.listdir('xml')
 
 	r['scans'] = {}
 
@@ -333,7 +333,7 @@ def apiv1_scan(request):
 		xmlfilescount = (xmlfilescount + 1)
 
 		try:
-			oo = xmltodict.parse(open('/root/TOOLZ/THSMap/xml/'+i, 'r').read())
+			oo = xmltodict.parse(open('xml/'+i, 'r').read())
 		except:
 			r['scans'][i] = {'filename':html.escape(i), 'startstr': '', 'nhost':0, 'port_stats':{'open':0,'closed':0,'filtered':0}}
 			continue

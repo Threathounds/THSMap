@@ -1,0 +1,5 @@
+1. make the PDF generation work
+2. put logos back
+3. clean up code
+4. stop all those calls to "/api/v1/nmap/scan/active"
+5. make all paths relative (e.g. "/root/TOOLZ/THSMap" should become "./")

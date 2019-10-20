@@ -31,7 +31,7 @@ def visjs(request):
 		'''
 		return render(request, 'thsdashboard/nmap_network.html', r)
 
-	oo = xmltodict.parse(open('/root/TOOLZ/THSMap/xml/'+request.session['scanfile'], 'r').read())
+	oo = xmltodict.parse(open('xml/'+request.session['scanfile'], 'r').read())
 	r['out2'] = json.dumps(oo['nmaprun'], indent=4)
 	o = json.loads(r['out2'])
 

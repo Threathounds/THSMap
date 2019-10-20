@@ -1,18 +1,26 @@
-import xmltodict, json, html, os, hashlib, re, requests, base64, urllib.parse, sys
+import xmltodict
+import json
+import hashlib
+import re
+import requests
+import sys
+from thsdashboard import functions
+
 
 def getcpe(xmlfile):
-	cpe,cve = {},{}
+	cpe, cve = {}, {}
 
-	oo = xmltodict.parse(open('/root/TOOLZ/THSMap/xml/'+xmlfile, 'r').read())
-	o = json.loads(json.dumps(oo['nmaprun'], indent=4))
+	# read the XML data from the specified file
+	xml_data = xmltodict.parse(open('xml/'+xmlfile, 'r').read())
+	# convert the XML data to JSON
+	json_data = json.loads(json.dumps(xml_data['nmaprun'], indent=4))
 
-	for ik in o['host']:
-
-		# this fix single host report
+	print(json_data)
+	for ik in json_data['host']:
 		if type(ik) is dict:
 			i = ik
 		else:
-			i = o['host']
+			i = json_data['host']
 
 		lastportid = 0
 
@@ -24,6 +32,8 @@ def getcpe(xmlfile):
 					address = ai['@addr'] 
 
 		addressmd5 = hashlib.md5(str(address).encode('utf-8')).hexdigest()
+
+
 		cpe[address] = {}
 		cve[address] = {}
 
@@ -62,6 +72,7 @@ def getcpe(xmlfile):
 
 	res = {'cpe':cpe,'cve':cve}
 	return res
+
 
 def getcve(xmlfile):
 	scanfilemd5 = hashlib.md5(str(xmlfile).encode('utf-8')).hexdigest()
@@ -106,8 +117,10 @@ def getcve(xmlfile):
 		#continue
 
 		if type(cvejson[i]) is list and len(cvejson[i]) > 0:
-			f = open('/opt/notes/'+scanfilemd5+'_'+hostmd5+'.cve', 'w')
+			f = open('notes/'+scanfilemd5+'_'+hostmd5+'.cve', 'w')
 			f.write(json.dumps(cvejson[i], indent=4))
 			f.close()
 
 getcve(sys.argv[1])
+
+
