@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
-import string, hashlib
+import hashlib
+import string
 from random import *
+
 allchar = string.ascii_letters + string.digits
 password = "".join(choice(allchar) for x in range(randint(12, 12)))
 print('Token: '  + password)

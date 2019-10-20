@@ -1,11 +1,15 @@
 #!/bin/bash
 
-pip3 install curl wget git wkhtmltopdf libssl1.0-dev vim nmap tzdata
-wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
-tar -xvf wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
+apt install xfonts-75dpi
+# pip3 install curl wget git wkhtmltopdf libssl1.0-dev vim nmap tzdata
+wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.stretch_amd64.deb
+# tar -xvf wkhtmltox-0.12.5-1.stretch_amd64.deb
+dpkg -i wkhtmltox-0.12.5-1.stretch_amd64.deb
 
 mkdir notes
 mkdir xml
 
 python3 manage.py migrate
 echo "Your token is $(python3 thsdashboard/token.py | cut -f 2 -d ' ')"
+sleep 3
+python3 manage.py runserver

@@ -179,14 +179,14 @@
 <div class="navbar-fixed">
 <nav class="" id="topnavbar" style="background-color:rgba(10,10,10,0.0);box-shadow:none;">
 	<div class="nav-wrapper">
-		{% if scanfile and address %}
+		{% if xmlfile and address %}
 		<div class="col s5 right hide-on-med-and-down" style="margin-right:20px;">
-			<a href="/" class="breadcrumb">{{ scanfile }}</a> <a href="/report/{{ address }}/" class="breadcrumb">{{ address }}</a>
+			<a href="/" class="breadcrumb">{{ xmlfile }}</a> <a href="/report/{{ address }}/" class="breadcrumb">{{ address }}</a>
 		</div>
 		{% endif %}
-		{% if scanfile and not address %}
+		{% if xmlfile and not address %}
 		<div class="col s5 right hide-on-med-and-down" style="margin-right:20px;">
-			<a href="/" class="breadcrumb">{{ scanfile }}</a> 
+			<a href="/" class="breadcrumb">{{ xmlfile }}</a>
 		</div>
 		{% endif %}
 		<div class="row">
@@ -210,7 +210,7 @@
 		<li><i class="material-icons">track_changes</i> <a href="/setscanfile/unset">Show all nmap scan</a></li>
 		<li><i class="material-icons">settings_input_antenna</i> <a href="/">Show scan details</a></li>
 		<li><i class="material-icons">add_box</i> <a href="#!" onclick="javascript:newscan();">New Nmap scan</a></li>
-		{% if scanfile %}
+		{% if xmlfile %}
 			<li><i class="fas fa-file-pdf" style="margin-left:2px;font-size:20px;"></i> <a href="#!" onclick="javascript:genPDF('{{ scanmd5 }}');">PDF Report</a></li>
 			<li><i class="fas fa-bug" style="margin-left:2px;font-size:20px;"></i> <a href="#!" onclick="javascript:checkCVE();">Check CVE</a></li>
 			<li><i class="fas fa-project-diagram" style="margin-left:2px;font-size:18px;"></i> <a href="/report/view/network">Network View</a></li>
@@ -246,7 +246,7 @@
 </div>
 {% endif %}
 
-{% if scanfile %}
+{% if xmlfile %}
 <ul id="slide-out" class="sidenav">
 	<li><div class="user-view">
 		<div class="background" style="text-align:center;">

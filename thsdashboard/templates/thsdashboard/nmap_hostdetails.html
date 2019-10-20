@@ -33,7 +33,7 @@
 				</div>
 			</div>
 			
-			{% if stats.popen == 0 and stats.pclosed == 0 and stats.pfiltered == 0 %}
+			{% if stats.ports_open == 0 and stats.ports_closed == 0 and stats.ports_filtered == 0 %}
 			{% else %}
 			<div class="card-action">
 				<a href="#!" onclick="javascript:genPDF('{{ scanmd5 }}');"><i class="fas fa-file-pdf"></i> PDF Report</a>
@@ -45,12 +45,12 @@
 
 		<div class="row" style="{{ pretablestyle }}">
 			<div class="col s12 m3" style="padding:1px;"><div class="card wmcard" style="text-align:center;padding:6px;"><h4><i class="fab fa-creative-commons-sampling"></i> <span class="blue-text">{{ stats.hostsup }}</span></h4><span class="small grey-text">HOSTS UP</span></div></div>
-			<div class="col s12 m3" style="padding:1px;"><div class="card wmcard" style="text-align:center;padding:6px;"><h4><i class="fas fa-door-open green-text"></i> <span class="green-text">{{ stats.popen }}</span></h4><span class="small grey-text">OPEN PORTS</span></div></div>
-			<div class="col s12 m3" style="padding:1px;"><div class="card wmcard" style="text-align:center;padding:6px;"><h4><i class="fas fa-door-closed red-text"></i> <span class="red-text">{{ stats.pclosed }}</span></h4><span class="small grey-text">CLOSED PORTS</span></div></div>
-			<div class="col s12 m3" style="padding:1px;"><div class="card wmcard" style="text-align:center;padding:6px;"><h4><i class="fas fa-filter orange-text"></i> <span class="orange-text">{{ stats.pfiltered }}</span></h4><span class="small grey-text">FILTERED PORTS</span></div></div>
+			<div class="col s12 m3" style="padding:1px;"><div class="card wmcard" style="text-align:center;padding:6px;"><h4><i class="fas fa-door-open green-text"></i> <span class="green-text">{{ stats.ports_open }}</span></h4><span class="small grey-text">OPEN PORTS</span></div></div>
+			<div class="col s12 m3" style="padding:1px;"><div class="card wmcard" style="text-align:center;padding:6px;"><h4><i class="fas fa-door-closed red-text"></i> <span class="red-text">{{ stats.ports_closed }}</span></h4><span class="small grey-text">CLOSED PORTS</span></div></div>
+			<div class="col s12 m3" style="padding:1px;"><div class="card wmcard" style="text-align:center;padding:6px;"><h4><i class="fas fa-filter orange-text"></i> <span class="orange-text">{{ stats.ports_filtered }}</span></h4><span class="small grey-text">FILTERED PORTS</span></div></div>
 		</div>
 
-		{% if stats.popen == 0 and stats.pclosed == 0 and stats.pfiltered == 0 %}
+		{% if stats.ports_open == 0 and stats.ports_closed == 0 and stats.ports_filtered == 0 %}
 		{% else %}
 		<div class="card wmcard hide-on-med-and-down" style="{{ pretablestyle }}">
 			<div class="card-content">
@@ -67,30 +67,28 @@
 		</div>
 		{% endif %}
 
-		{% if stats.popen == 0 and stats.pclosed == 0 and stats.pfiltered == 0 %}
+		{% if stats.ports_open == 0 and stats.ports_closed == 0 and stats.ports_filtered == 0 %}
 		{% else %}
 			{{ js|safe }}
 		{% endif %}
 
 		{% for i,v in tr.items %}
 			<div class="card wmcard">
-
-
 				<div class="card-content">
 					<div class="row" style="padding:0px;margin-bottom:0px;">
 						<div class="col s4" style="border-right:solid #444 1px;">
 							<div class="hindex wmcard">{{ v.hostindex }}</div>
 							{{ v.newlabelout|safe }}
 
-							{% if v.po != 0 or v.pc != 0 or v.pf != 0 %}
+							{% if v.ports_open != 0 or v.ports_closed != 0 or v.ports_filtered != 0 %}
 								<h5><a href="/report/{{ i }}" class="blue-text text-darken-3">{{ i }}</a></h5>{{ v.hostname|safe }}
 							{% else %}
 								<h5>{{ i }}</h5>{{ v.hostname|safe }}
 							{% endif %}
 
-							<i class="fas fa-door-open green-text"></i> <span class="green-text">{{ v.po }}</span>
-							<i class="fas fa-door-closed red-text"></i> <span class="red-text">{{ v.pc }}</span>
-							<i class="fas fa-filter orange-text"></i> <span class="orange-text">{{ v.pf }}</span>
+							<i class="fas fa-door-open green-text"></i> <span class="green-text">{{ v.ports_open}}</span>
+							<i class="fas fa-door-closed red-text"></i> <span class="red-text">{{ v.ports_closed}}</span>
+							<i class="fas fa-filter orange-text"></i> <span class="orange-text">{{ v.ports_filtered }}</span>
 
 						</div>
 						<div class="col s4 small grey-text">

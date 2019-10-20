@@ -1,15 +1,16 @@
 from django.urls import path
+
 from . import views, api, pdf, network, functions_nmap, ndiff
 
 urlpatterns = [
 	path('', views.index, name='index'),
-	path('setscanfile/<scanfile>', views.setscanfile, name='setscanfile'),
+	path('setscanfile/<xmlfile>', views.setscanfile, name='setscanfile'),
 	path('<address>/', views.details, name='details'),
 	path('port/<port>/', views.port, name='port'),
 	path('service/<filterservice>/', views.index, name='service'),
 	path('portid/<filterportid>/', views.index, name='portid'),
-	path('api/v1/scan/<scanfile>/<faddress>', api.apiv1_hostdetails, name='apiv1_hostdetails'),
-	path('api/v1/scan/<scanfile>', api.apiv1_hostdetails, name='apiv1_hostdetails'),
+	path('api/v1/scan/<xmlfile>/<faddress>', api.apiv1_hostdetails, name='apiv1_hostdetails'),
+	path('api/v1/scan/<xmlfile>', api.apiv1_hostdetails, name='apiv1_hostdetails'),
 	path('api/v1/scan', api.apiv1_scan, name='apiv1_scan'),
 	path('api/v1/nmap/scan/active', functions_nmap.nmap_scaninfo, name='apiv1_scan_active'),
 	path('api/v1/nmap/scan/new', functions_nmap.nmap_newscan, name='apiv1_scan_new'),

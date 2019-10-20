@@ -1,8 +1,13 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-import xmltodict, json, html, os, hashlib, re, urllib.parse, base64
+import base64
+import html
+import urllib.parse
 from collections import OrderedDict
+
+from django.http import HttpResponse
+from django.shortcuts import render
+
 from thsdashboard.functions import *
+
 
 def login(request):
 	r = {}
@@ -16,17 +21,17 @@ def login(request):
 
 	return render(request, 'thsdashboard/nmap_auth.html', r)
 
-def setscanfile(request, scanfile):
+def setscanfile(request, xmlfile):
 	xmlfiles = os.listdir('xml')
 
 	for i in xmlfiles:
-		if i == scanfile:
-			request.session['scanfile'] = i
+		if i == xmlfile:
+			request.session['xmlfile'] = i
 			break
 
-	if scanfile == 'unset':
-		if 'scanfile' in request.session:
-			del(request.session['scanfile'])
+	if xmlfile == 'unset':
+		if 'xmlfile' in request.session:
+			del(request.session['xmlfile'])
 
 	return render(request, 'thsdashboard/nmap_hostdetails.html', { 'js': '<script> location.href="/"; </script>' })
 
@@ -42,7 +47,7 @@ def details(request, address):
 	else:
 		r['auth'] = True
 
-	oo = xmltodict.parse(open('xml/'+request.session['scanfile'], 'r').read())
+	oo = xmltodict.parse(open('xml/'+request.session['xmlfile'], 'r').read())
 	r['out2'] = json.dumps(oo['nmaprun'], indent=4)
 	o = json.loads(r['out2'])
 
@@ -50,7 +55,7 @@ def details(request, address):
 	v,e,z,h = '','','',''
 	ports_closed,ports_open,ports_filtered=0,0,0
 
-	scanmd5 = hashlib.md5(str(request.session['scanfile']).encode('utf-8')).hexdigest()
+	scanmd5 = hashlib.md5(str(request.session['xmlfile']).encode('utf-8')).hexdigest()
 	addressmd5 = hashlib.md5(str(address).encode('utf-8')).hexdigest()
 
 	# collect all labels in labelhost dict
@@ -110,11 +115,11 @@ def details(request, address):
 			r['address'] = html.escape(str(saddress))
 			r['hostname'] = hostname
 
-			scantitle = request.session['scanfile'].replace('.xml','').replace('_',' ')
-			if re.search('^webmapsched\_[0-9\.]+', request.session['scanfile']):
-				m = re.search('^webmapsched\_[0-9\.]+\_(.+)', request.session['scanfile'])
+			scantitle = request.session['xmlfile'].replace('.xml','').replace('_',' ')
+			if re.search('^webmapsched\_[0-9\.]+', request.session['xmlfile']):
+				m = re.search('^webmapsched\_[0-9\.]+\_(.+)', request.session['xmlfile'])
 				scantitle = m.group(1).replace('.xml','').replace('_',' ')
-			r['scanfile'] = scantitle
+			r['xmlfile'] = scantitle
 
 
 			labelout = '<span id="hostlabel"></span>'
@@ -311,14 +316,14 @@ def details(request, address):
 
 	r['js'] = '<script> '+\
 	'$(document).ready(function() { '+\
-	'	$("#scantitle").html("'+html.escape(request.session['scanfile'])+'");'+\
+	'	$("#scantitle").html("'+html.escape(request.session['xmlfile'])+'");'+\
 	'	var clipboard = new ClipboardJS(".btncpy"); '+\
 	'	clipboard.on("success", function(e) { '+\
 	'		M.toast({html: "Copied to clipboard"}); '+\
 	'	}); '+\
 	'	$(".dropdown-trigger").dropdown(); '+\
 	'	$("#detailspo").html(\'<center><h4><i class="fas fa-door-open green-text"></i> '+str(ports_open)+'</h4><span class="small grey-text">OPEN PORTS</span></center>\');'+\
-	'	$("#detailspc").html(\'<center><h4><i class="fas fa-door-closed red-text"></i> '+str(ports_closed)+'</h4><span class="small grey-text">CLOSED PORTS</span></center>\');'+\
+	'	$("#detailspc ").html(\'<center><h4><i class="fas fa-door-closed red-text"></i> '+str(ports_closed)+'</h4><span class="small grey-text">CLOSED PORTS</span></center>\');'+\
 	'	$("#detailspf").html(\'<center><h4><i class="fas fa-filter grey-text"></i> '+str(ports_filtered)+'</h4><span class="small grey-text">FILTERED PORTS</span></center>\');'+\
 	'}); '+\
 	'</script>'
@@ -336,8 +341,8 @@ def index(request, filterservice="", filterportid=""):
 	gitcmd = os.popen('cd thsdashboard && git rev-parse --abbrev-ref HEAD')
 	r['webmapver'] = 'WebMap '+gitcmd.read()+'<br>This project is currently a beta, please <b>DO NOT</b> expose WebMap to internet.<br>This version is <b>NOT</b> production ready.'
 
-	if 'scanfile' in request.session:
-		oo = xmltodict.parse(open('xml/'+request.session['scanfile'], 'r').read())
+	if 'xmlfile' in request.session:
+		oo = xmltodict.parse(open('xml/'+request.session['xmlfile'], 'r').read())
 		r['out2'] = json.dumps(oo['nmaprun'], indent=4)
 		o = json.loads(r['out2'])
 	else:
@@ -399,11 +404,10 @@ def index(request, filterservice="", filterportid=""):
 
 		r['tr'] = OrderedDict(sorted(r['tr'].items()))
 		r['stats']['xmlcount'] = xmlfilescount
-
 		return render(request, 'thsdashboard/nmap_xmlfiles.html', r)
 
-	scanmd5 = hashlib.md5(str(request.session['scanfile']).encode('utf-8')).hexdigest()
-	r['scanfile'] = html.escape(str(request.session['scanfile']))
+	scanmd5 = hashlib.md5(str(request.session['xmlfile']).encode('utf-8')).hexdigest()
+	r['xmlfile'] = html.escape(str(request.session['xmlfile']))
 	r['scanmd5'] = scanmd5
 
 	# collect all labels in labelhost dict
@@ -705,9 +709,9 @@ def index(request, filterservice="", filterportid=""):
 		'nmapargs': o['@args'],
 		'xmlver': o['@xmloutputversion'],
 		'hostsup': str(hostsup),
-		'popen': ports['open'],
-		'pclosed': ports['closed'],
-		'pfiltered': ports['filtered']
+		'ports_open': ports['open'],
+		'ports_closed': ports['closed'],
+		'ports_filtered': ports['filtered']
 	}
 
 	allss = ''
@@ -772,7 +776,7 @@ def index(request, filterservice="", filterportid=""):
 
 	r['js'] += '<script>'+\
 	'	$(document).ready(function() {'+\
-	'		/* $("#scantitle").html("'+html.escape(request.session['scanfile'])+'"); */ '+\
+	'		/* $("#scantitle").html("'+html.escape(request.session['xmlfile'])+'"); */ '+\
 	'		$(".dropdown-trigger").dropdown();'+\
 	'		$(".tooltipped").tooltip();'+\
 	'		$(".perco").each(function() { '+\
