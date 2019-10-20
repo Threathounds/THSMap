@@ -128,7 +128,7 @@ def genPDF(request):
             os.remove('thsdashboard/static/' + pdffile + '.pdf')
 
         os.popen(
-            '/usr/local/bin/wkhtmltopdf --cookie sessionid ' + request.session._session_key + ' --enable-javascript --javascript-delay 6000 http://127.0.0.1:8000/view/pdf/ thsdashboard/static/' + pdffile + '.pdf')
+            '/usr/local/bin/wkhtmltopdf --cookie sessionid ' + request.session._session_key + ' --enable-javascript --javascript-delay 6000 http://127.0.0.1:8888/view/pdf/ thsdashboard/static/' + pdffile + '.pdf')
         res = {'ok': 'PDF created', 'file': '/static/' + pdffile + '.pdf'}
         return HttpResponse(json.dumps(res), content_type="application/json")
 
