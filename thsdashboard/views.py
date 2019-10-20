@@ -17,7 +17,7 @@ def login(request):
 	return render(request, 'thsdashboard/nmap_auth.html', r)
 
 def setscanfile(request, scanfile):
-	xmlfiles = os.listdir('/root/TOOLZ/THSMap/xml')
+	xmlfiles = os.listdir('xml')
 
 	for i in xmlfiles:
 		if i == scanfile:
@@ -42,36 +42,36 @@ def details(request, address):
 	else:
 		r['auth'] = True
 
-	oo = xmltodict.parse(open('/root/TOOLZ/THSMap/xml/'+request.session['scanfile'], 'r').read())
+	oo = xmltodict.parse(open('xml/'+request.session['scanfile'], 'r').read())
 	r['out2'] = json.dumps(oo['nmaprun'], indent=4)
 	o = json.loads(r['out2'])
 
 	r['trhost'] = ''
 	v,e,z,h = '','','',''
-	pc,po,pf=0,0,0
+	ports_closed,ports_open,ports_filtered=0,0,0
 
 	scanmd5 = hashlib.md5(str(request.session['scanfile']).encode('utf-8')).hexdigest()
 	addressmd5 = hashlib.md5(str(address).encode('utf-8')).hexdigest()
 
 	# collect all labels in labelhost dict
 	labelhost = {}
-	labelfiles = os.listdir('/root/TOOLZ/THSMap/notes')
+	labelfiles = os.listdir('notes')
 	for lf in labelfiles:
 		m = re.match('^('+scanmd5+')_([a-z0-9]{32,32})\.host\.label$', lf)
 		if m is not None:
 			if m.group(1) not in labelhost:
 				labelhost[m.group(1)] = {}
-			labelhost[m.group(1)][m.group(2)] = open('/root/TOOLZ/THSMap/notes/'+lf, 'r').read()
+			labelhost[m.group(1)][m.group(2)] = open('notes/'+lf, 'r').read()
 
 	# collect all notes in noteshost dict
 	noteshost = {}
-	notesfiles = os.listdir('/root/TOOLZ/THSMap/notes')
+	notesfiles = os.listdir('notes')
 	for nf in notesfiles:
 		m = re.match('^('+scanmd5+')_([a-z0-9]{32,32})\.notes$', nf)
 		if m is not None:
 			if m.group(1) not in noteshost:
 				noteshost[m.group(1)] = {}
-			noteshost[m.group(1)][m.group(2)] = open('/root/TOOLZ/THSMap/notes/'+nf, 'r').read()
+			noteshost[m.group(1)][m.group(2)] = open('notes/'+nf, 'r').read()
 
 	# collect all cve in cvehost dict
 	cvehost = get_cve(scanmd5)
@@ -141,11 +141,11 @@ def details(request, address):
 				rmdupl[p['@portid']] = 1
 
 				if p['state']['@state'] == 'closed':
-					pc = (pc + 1)
+					ports_closed = (ports_closed + 1)
 				elif p['state']['@state'] == 'open':
-					po = (po + 1)
+					ports_open = (ports_open + 1)
 				elif p['state']['@state'] == 'filtered':
-					pf = (pf + 1)
+					ports_filtered = (ports_filtered + 1)
 
 				pel = (pel + 1)
 				oshtml = ''
@@ -317,9 +317,9 @@ def details(request, address):
 	'		M.toast({html: "Copied to clipboard"}); '+\
 	'	}); '+\
 	'	$(".dropdown-trigger").dropdown(); '+\
-	'	$("#detailspo").html(\'<center><h4><i class="fas fa-door-open green-text"></i> '+str(po)+'</h4><span class="small grey-text">OPEN PORTS</span></center>\');'+\
-	'	$("#detailspc").html(\'<center><h4><i class="fas fa-door-closed red-text"></i> '+str(pc)+'</h4><span class="small grey-text">CLOSED PORTS</span></center>\');'+\
-	'	$("#detailspf").html(\'<center><h4><i class="fas fa-filter grey-text"></i> '+str(pf)+'</h4><span class="small grey-text">FILTERED PORTS</span></center>\');'+\
+	'	$("#detailspo").html(\'<center><h4><i class="fas fa-door-open green-text"></i> '+str(ports_open)+'</h4><span class="small grey-text">OPEN PORTS</span></center>\');'+\
+	'	$("#detailspc").html(\'<center><h4><i class="fas fa-door-closed red-text"></i> '+str(ports_closed)+'</h4><span class="small grey-text">CLOSED PORTS</span></center>\');'+\
+	'	$("#detailspf").html(\'<center><h4><i class="fas fa-filter grey-text"></i> '+str(ports_filtered)+'</h4><span class="small grey-text">FILTERED PORTS</span></center>\');'+\
 	'}); '+\
 	'</script>'
 
@@ -333,19 +333,19 @@ def index(request, filterservice="", filterportid=""):
 	else:
 		r['auth'] = True
 
-	gitcmd = os.popen('cd /root/TOOLZ/THSMap/thsdashboard && git rev-parse --abbrev-ref HEAD')
+	gitcmd = os.popen('cd thsdashboard && git rev-parse --abbrev-ref HEAD')
 	r['webmapver'] = 'WebMap '+gitcmd.read()+'<br>This project is currently a beta, please <b>DO NOT</b> expose WebMap to internet.<br>This version is <b>NOT</b> production ready.'
 
 	if 'scanfile' in request.session:
-		oo = xmltodict.parse(open('/root/TOOLZ/THSMap/xml/'+request.session['scanfile'], 'r').read())
+		oo = xmltodict.parse(open('xml/'+request.session['scanfile'], 'r').read())
 		r['out2'] = json.dumps(oo['nmaprun'], indent=4)
 		o = json.loads(r['out2'])
 	else:
 		# no file selected
-		xmlfiles = os.listdir('/root/TOOLZ/THSMap/xml')
+		xmlfiles = os.listdir('xml')
 
 		r['tr'] = {}
-		r['stats'] = { 'po':0, 'pc':0, 'pf':0}
+		r['stats'] = { 'ports_open':0, 'ports_closed':0, 'ports_filtered':0}
 
 		xmlfilescount = 0
 		for i in xmlfiles:
@@ -356,9 +356,9 @@ def index(request, filterservice="", filterportid=""):
 			xmlfilescount = (xmlfilescount + 1)
 
 			try:
-				oo = xmltodict.parse(open('/root/TOOLZ/THSMap/xml/'+i, 'r').read())
+				oo = xmltodict.parse(open('xml/'+i, 'r').read())
 			except:
-				r['tr'][i] = {'filename':html.escape(i), 'start': 0, 'startstr': 'Incomplete / Invalid', 'hostnum':0, 'href':'#!', 'portstats':{'po':0,'pc':0,'pf':0}}
+				r['tr'][i] = {'filename':html.escape(i), 'start': 0, 'startstr': 'Incomplete / Invalid', 'hostnum':0, 'href':'#!', 'portstats':{'ports_open':0,'ports_closed':0,'ports_filtered':0}}
 				continue
 
 			r['out2'] = json.dumps(oo['nmaprun'], indent=4)
@@ -384,9 +384,9 @@ def index(request, filterservice="", filterportid=""):
 
 			portstats = nmap_ports_stats(i)
 
-			r['stats']['po'] = (r['stats']['po'] + portstats['po'])
-			r['stats']['pc'] = (r['stats']['pc'] + portstats['pc'])
-			r['stats']['pf'] = (r['stats']['pf'] + portstats['pf'])
+			r['stats']['ports_open'] = (r['stats']['ports_open'] + portstats['ports_open'])
+			r['stats']['ports_closed'] = (r['stats']['ports_closed'] + portstats['ports_closed'])
+			r['stats']['ports_filtered'] = (r['stats']['ports_filtered'] + portstats['ports_filtered'])
 
 			r['tr'][o['@start']] = {
 				'filename':filename,
@@ -408,23 +408,23 @@ def index(request, filterservice="", filterportid=""):
 
 	# collect all labels in labelhost dict
 	labelhost = {}
-	labelfiles = os.listdir('/root/TOOLZ/THSMap/notes')
+	labelfiles = os.listdir('notes')
 	for lf in labelfiles:
 		m = re.match('^('+scanmd5+')_([a-z0-9]{32,32})\.host\.label$', lf)
 		if m is not None:
 			if m.group(1) not in labelhost:
 				labelhost[m.group(1)] = {}
-			labelhost[m.group(1)][m.group(2)] = open('/root/TOOLZ/THSMap/notes/'+lf, 'r').read()
+			labelhost[m.group(1)][m.group(2)] = open('notes/'+lf, 'r').read()
 
 	# collect all notes in noteshost dict
 	noteshost = {}
-	notesfiles = os.listdir('/root/TOOLZ/THSMap/notes')
+	notesfiles = os.listdir('notes')
 	for nf in notesfiles:
 		m = re.match('^('+scanmd5+')_([a-z0-9]{32,32})\.notes$', nf)
 		if m is not None:
 			if m.group(1) not in noteshost:
 				noteshost[m.group(1)] = {}
-			noteshost[m.group(1)][m.group(2)] = open('/root/TOOLZ/THSMap/notes/'+nf, 'r').read()
+			noteshost[m.group(1)][m.group(2)] = open('notes/'+nf, 'r').read()
 
 	# collect all cve in cvehost dict
 	cvehost = get_cve(scanmd5)
@@ -457,7 +457,7 @@ def index(request, filterservice="", filterportid=""):
 				else:
 					hostname += '<div class="small grey-text"><b>'+i['hostnames']['hostname']['@type']+':</b> '+i['hostnames']['hostname']['@name']+'</div>'
 
-		po,pc,pf = 0,0,0
+		ports_open,ports_closed,ports_filtered = 0,0,0
 		ss,pp,ost = {},{},{}
 		lastportid = 0
 
@@ -477,9 +477,9 @@ def index(request, filterservice="", filterportid=""):
 				r['tr'][address] = {
 					'hostindex': '',
 					'hostname': hostname,
-					'po': 0,
-					'pc': 0,
-					'pf': 0,
+					'ports_open': 0,
+					'ports_closed': 0,
+					'ports_filtered': 0,
 					'totports': str(0),
 					'addressmd5': addressmd5
 				}
@@ -544,13 +544,13 @@ def index(request, filterservice="", filterportid=""):
 					
 				if p['state']['@state'] == 'closed':
 					ports['closed'] = (ports['closed'] + 1)
-					pc = (pc + 1)
+					ports_closed = (ports_closed + 1)
 				elif p['state']['@state'] == 'open':
 					ports['open'] = (ports['open'] + 1)
-					po = (po + 1)
+					ports_open = (ports_open + 1)
 				elif p['state']['@state'] == 'filtered':
 					ports['filtered'] = (ports['filtered'] + 1)
-					pf = (pf + 1)
+					ports_filtered = (ports_filtered + 1)
 
 			services = ''
 			for s in ss:
@@ -571,7 +571,7 @@ def index(request, filterservice="", filterportid=""):
 					tdports += '<span class="tmlabel" style="background-color:#ffcc00;color:#333;">'+pp[kp]+'</span>, '
 
 			poclass = ''
-			if po == 0:
+			if ports_open == 0:
 				poclass = 'zeroportopen'
 
 			labelout = '<span id="hostlabel'+str(hostindex)+'"></span>'
@@ -610,13 +610,13 @@ def index(request, filterservice="", filterportid=""):
 						cveout = '<a href="/report/'+address+'" class="grey-text"><i class="fas fa-exclamation-triangle"></i> '+str(cvecount)+' CVE found</a>'
 
 			if (filterservice != "" and striggered is True) or (filterportid != "" and striggered is True) or (filterservice == "" and filterportid == ""):
-				portstateout = '<div style="overflow:none;background-color:#444;" class="tooltipped" data-position="top" data-tooltip="'+str(po)+' open, '+str(pc)+' closed, '+str(pf)+' filtered">'+\
-				'		<div class="perco" data-po="'+str(po)+'" style="padding-left:16px;padding-right:20px;"><b>'+str(po)+'</b></div>'+\
+				portstateout = '<div style="overflow:none;background-color:#444;" class="tooltipped" data-position="top" data-tooltip="'+str(ports_open)+' open, '+str(ports_closed)+' closed, '+str(ports_filtered)+' filtered">'+\
+				'		<div class="perco" data-ports_open="'+str(ports_open)+'" style="padding-left:16px;padding-right:20px;"><b>'+str(ports_open)+'</b></div>'+\
 				' </div>'
 
 				if (filterservice != "" and striggered is True):
-					portstateout = '<div style="overflow:none;background-color:#444;" class="tooltipped" data-position="top" data-tooltip="'+str(po)+' open, '+str(pc)+' closed, '+str(pf)+' filtered">'+\
-					'		<div class="perco" data-po="'+str(po)+'" data-pt="'+str((po + pf + pc))+'" style="padding-left:16px;padding-right:20px;"><b>'+str(po)+'</b></div>'+\
+					portstateout = '<div style="overflow:none;background-color:#444;" class="tooltipped" data-position="top" data-tooltip="'+str(ports_open)+' open, '+str(ports_closed)+' closed, '+str(ports_filtered)+' filtered">'+\
+					'		<div class="perco" data-ports_open="'+str(ports_open)+'" data-pt="'+str((ports_open + ports_filtered + ports_closed))+'" style="padding-left:16px;padding-right:20px;"><b>'+str(ports_open)+'</b></div>'+\
 					'	</div>'
 
 				tags = []
@@ -634,11 +634,11 @@ def index(request, filterservice="", filterportid=""):
 					'notes': notesout,
 					'cve': cveout,
 					'portstate': portstateout,
-					'po': po,
-					'pc': pc,
-					'pf': pf,
+					'ports_open': ports_open,
+					'ports_closed': ports_closed,
+					'ports_filtered': ports_filtered,
 					'tags':tags,
-					'totports': str((po + pf + pc)),
+					'totports': str((ports_open + ports_filtered + ports_closed)),
 					'services': str(services[0:-2]),
 					'ports': str(tdports[0:-2]),
 					'addressmd5': addressmd5,
@@ -776,10 +776,10 @@ def index(request, filterservice="", filterportid=""):
 	'		$(".dropdown-trigger").dropdown();'+\
 	'		$(".tooltipped").tooltip();'+\
 	'		$(".perco").each(function() { '+\
-	'			var pwidth = ( (($(this).attr("data-po") * 100) / '+str(totports)+') ); '+\
+	'			var pwidth = ( (($(this).attr("data-ports_open") * 100) / '+str(totports)+') ); '+\
 	'			/* console.log(pwidth); */ '+\
 	'			$(this).css("width", pwidth+"%" ); '+\
-	'			if($(this).attr("data-po") < 1) { $(this).html("&nbsp;"); $(this).css("background-color","#666") } '+\
+	'			if($(this).attr("data-ports_open") < 1) { $(this).html("&nbsp;"); $(this).css("background-color","#666") } '+\
 	'		});'+\
 	'	$("#detailstopports").html(\'<span class="small">'+str(allss[0:-2])+'</span>\');'+\
 	'	});'+\
@@ -809,9 +809,9 @@ def scan_diff(request, f1, f2):
 		r['auth'] = True
 
 	try:
-		if xmltodict.parse(open('/root/TOOLZ/THSMap/xml/'+f1, 'r').read()) is not None:
+		if xmltodict.parse(open('xml/'+f1, 'r').read()) is not None:
 			r['f1'] = f1
-		if xmltodict.parse(open('/root/TOOLZ/THSMap/xml/'+f2, 'r').read()) is not None:
+		if xmltodict.parse(open('xml/'+f2, 'r').read()) is not None:
 			r['f2'] = f2
 	except:
 		r['f1'] = ''

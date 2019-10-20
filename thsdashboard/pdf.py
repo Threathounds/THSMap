@@ -17,7 +17,7 @@ def reportPDFView(request):
 	}
 
 	if 'scanfile' in request.session:
-		oo = xmltodict.parse(open('/root/TOOLZ/THSMap/xml/'+request.session['scanfile'], 'r').read())
+		oo = xmltodict.parse(open('xml/'+request.session['scanfile'], 'r').read())
 		r['out2'] = json.dumps(oo['nmaprun'], indent=4)
 		o = json.loads(r['out2'])
 	else:
@@ -60,23 +60,23 @@ def reportPDFView(request):
 
 		# collect all labels in labelhost dict
 		labelhost = {}
-		labelfiles = os.listdir('/root/TOOLZ/THSMap/notes')
+		labelfiles = os.listdir('notes')
 		for lf in labelfiles:
 			m = re.match('^('+scanmd5+')_([a-z0-9]{32,32})\.host\.label$', lf)
 			if m is not None:
 				if m.group(1) not in labelhost:
 					labelhost[m.group(1)] = {}
-				labelhost[m.group(1)][m.group(2)] = open('/root/TOOLZ/THSMap/notes/'+lf, 'r').read()
+				labelhost[m.group(1)][m.group(2)] = open('notes/'+lf, 'r').read()
 
 		# collect all notes in noteshost dict
 		noteshost = {}
-		notesfiles = os.listdir('/root/TOOLZ/THSMap/notes')
+		notesfiles = os.listdir('notes')
 		for nf in notesfiles:
 			m = re.match('^('+scanmd5+')_([a-z0-9]{32,32})\.notes$', nf)
 			if m is not None:
 				if m.group(1) not in noteshost:
 					noteshost[m.group(1)] = {}
-				noteshost[m.group(1)][m.group(2)] = open('/root/TOOLZ/THSMap/notes/'+nf, 'r').read()
+				noteshost[m.group(1)][m.group(2)] = open('notes/'+nf, 'r').read()
 
 		if i['status']['@state'] == 'up':
 			r['toc'] += '<b>'+saddress+'</b><br>&nbsp; <a href="#addr'+addressmd5+'">Port scan</a><br>'
