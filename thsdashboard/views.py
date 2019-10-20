@@ -804,24 +804,24 @@ def index(request, filterservice="", filterportid=""):
 
 	return render(request, 'thsdashboard/nmap_hostdetails.html', r)
 
-# def scan_diff(request, f1, f2):
-# 	r = {}
-#
-# 	if 'auth' not in request.session:
-# 		return render(request, 'thsdashboard/nmap_auth.html', r)
-# 	else:
-# 		r['auth'] = True
-#
-# 	try:
-# 		if xmltodict.parse(open('xml/'+f1, 'r').read()) is not None:
-# 			r['f1'] = f1
-# 		if xmltodict.parse(open('xml/'+f2, 'r').read()) is not None:
-# 			r['f2'] = f2
-# 	except:
-# 		r['f1'] = ''
-# 		r['f2'] = ''
-#
-# 	return render(request, 'thsdashboard/nmap_ndiff.html', r)
+def scan_diff(request, f1, f2):
+	r = {}
+
+	if 'auth' not in request.session:
+		return render(request, 'thsdashboard/nmap_auth.html', r)
+	else:
+		r['auth'] = True
+
+	try:
+		if xmltodict.parse(open('xml/'+f1, 'r').read()) is not None:
+			r['f1'] = f1
+		if xmltodict.parse(open('xml/'+f2, 'r').read()) is not None:
+			r['f2'] = f2
+	except:
+		r['f1'] = ''
+		r['f2'] = ''
+
+	return render(request, 'thsdashboard/nmap_ndiff.html', r)
 
 def about(request):
 	r = {}
